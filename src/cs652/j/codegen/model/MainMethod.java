@@ -6,16 +6,20 @@ package cs652.j.codegen.model;
  */
 public class MainMethod extends OutputModelObject {
 
-    public @ModelElement
+    public
+    @ModelElement
     Block body;
 
-    public @ModelElement
+    public
+    @ModelElement
     VarDef args;
 
-    public @ModelElement
-    VarDef returnType ;
+    public
+    @ModelElement
+    VarDef returnType;
 
-    public @ModelElement
-    VarDef functName ;
+    public
+    @ModelElement
+    VarDef funcName;
 
 }

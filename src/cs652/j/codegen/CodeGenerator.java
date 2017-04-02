@@ -48,19 +48,35 @@ public class CodeGenerator extends JBaseVisitor<OutputModelObject> {
         Block block = new Block();
         for (JParser.StatementContext stat : ctx.statement()) {
             OutputModelObject omo = visit(stat);
-            block.locals.add(omo);// include block statemets here //for loop with Jparser.statements
+            if (omo instanceof VarDef) {
+                block.locals.add(omo); // include block statemets here //for loop with Jparser.statements
+            } else {
+                block.instrs.add(omo);
+            }
         }
         return block;
     }
 
     @Override
     public OutputModelObject visitLocalVarStat(JParser.LocalVarStatContext ctx) {
-
-        return visitLocalVariableDeclaration(ctx.localVariableDeclaration());
+        return visit(ctx.localVariableDeclaration());
     }
 
     @Override
     public OutputModelObject visitLocalVariableDeclaration(JParser.LocalVariableDeclarationContext ctx) {
         return new VarDef(ctx.jType().getText(), ctx.ID().getText());
+    }
+
+    @Override
+    public OutputModelObject visitAssignStat(JParser.AssignStatContext ctx) {
+        String left = ctx.getChild(0).getText();
+        String right = ctx.getChild(2).getText();
+        return new AssignStat(left, right);
+    }
+
+    @Override
+    public OutputModelObject visitPrintStat(JParser.PrintStatContext ctx) {
+        String args = ctx.STRING().getText() + ", " + ctx.expressionList().getText();
+        return new PrintStat(args);
     }
 }

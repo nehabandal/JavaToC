@@ -7,7 +7,13 @@ import java.util.List;
  * Created by npbandal on 4/1/17.
  */
 public class VarDef extends OutputModelObject {
-    public String type, id;
+    public
+    @ModelElement
+    String type;
+
+    public
+    @ModelElement
+    String id;
 
     public VarDef(String t, String i) {
         type = t;
