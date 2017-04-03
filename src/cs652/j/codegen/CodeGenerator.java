@@ -80,8 +80,7 @@ public class CodeGenerator extends JBaseVisitor<OutputModelObject> {
 
     @Override
     public OutputModelObject visitPrintStat(JParser.PrintStatContext ctx) {
-        PrintStat printStat = new PrintStat();
-        printStat.args.add(ctx.STRING().getText());
+        PrintStat printStat = new PrintStat(ctx.STRING().getText());
         for (JParser.ExpressionContext expression : ctx.expressionList().expression()) {
             printStat.args.add(expression.getText());
         }
@@ -153,8 +152,7 @@ public class CodeGenerator extends JBaseVisitor<OutputModelObject> {
 
     @Override
     public OutputModelObject visitPrintStringStat(JParser.PrintStringStatContext ctx) {
-        String args = ctx.STRING().getText();
-        return new PrintStringStat(args);
+        return new PrintStringStat(ctx.STRING().getText());
     }
 
     @Override
@@ -194,5 +192,22 @@ public class CodeGenerator extends JBaseVisitor<OutputModelObject> {
     @Override
     public OutputModelObject visitCallStat(JParser.CallStatContext ctx) {
         return new CallStat((Expr) visit(ctx.expression()));
+    }
+
+    @Override
+    public OutputModelObject visitIfStat(JParser.IfStatContext ctx) {
+        List<JParser.StatementContext> statements = ctx.statement();
+        IfStat ifStat = statements.size() > 1 ? new IfElseStat() : new IfStat();
+        ifStat.condition = (Expr) visit(ctx.parExpression());
+        ifStat.stat = (Stat) visit(statements.get(0));
+        if (statements.size() > 1) {
+            ((IfElseStat) ifStat).elseStat = (Stat) visit(statements.get(1));
+        }
+        return ifStat;
+    }
+
+    @Override
+    public OutputModelObject visitParExpression(JParser.ParExpressionContext ctx) {
+        return visit(ctx.expression());
     }
 }
