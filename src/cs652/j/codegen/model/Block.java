@@ -6,13 +6,13 @@ import java.util.List;
 /**
  * Created by npbandal on 3/31/17.
  */
-public class Block extends OutputModelObject {
+public class Block extends Stat {
     public
     @ModelElement
-    List<OutputModelObject> locals = new ArrayList<>();
+    List<Stat> locals = new ArrayList<>();
 
     public
     @ModelElement
-    List<OutputModelObject> instrs = new ArrayList<>();
+    List<Stat> instrs = new ArrayList<>();
 
 }

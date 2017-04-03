@@ -3,7 +3,7 @@ package cs652.j.codegen.model;
 /**
  * Created by npbandal on 4/1/17.
  */
-public class VarDef extends OutputModelObject {
+public class VarDef extends Stat {
     public boolean isParameter;
 
     public

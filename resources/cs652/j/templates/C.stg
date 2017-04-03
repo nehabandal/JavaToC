@@ -66,7 +66,7 @@ Block(block, locals, instrs) ::= <<
 <locals>
 
 <endif>
-<instrs>
+<instrs; separator="\n">
 >>
 
 VarDef(var, type)   ::= <<
@@ -78,16 +78,21 @@ FuncName(f)         ::= ""
 ObjectTypeSpec(o)   ::= ""
 PrimitiveTypeSpec(p)::= "<p.name>"
 
-AssignStat(a,left,right) ::= "<left> = <right>;<\n>"
+AssignStat(a,left,right) ::= "<left> = <right>;"
 PrintStringStat(p)  ::= "printf(<p.formattedString>);"
 PrintStat(p,args)   ::= "printf(<p.formattedString>, <p.args; separator=\", \">);"
 CallStat(c,call)    ::= "<call>"
 CtorCall(ctor)      ::= "((<ctor.className> *)alloc(&<ctor.className>_metadata))"
 ReturnStat(r,expr)  ::= ""
-WhileStat(w,condition, stat) ::= ""
+WhileStat(w,condition, stat) ::= <<
+while ( <condition> ) {
+    <stat>
+}
+>>
 IfStat(i,condition, stat) ::= "if ( <condition> ) <stat>"
 IfElseStat(i,condition, stat, elseStat) ::= <<
-ifelsestat
+if ( <condition> ) <stat>
+else <elseStat>
 >>
 
 NullRef(n)          ::= "NULL"

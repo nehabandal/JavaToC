@@ -49,7 +49,7 @@ public class CodeGenerator extends JBaseVisitor<OutputModelObject> {
     public OutputModelObject visitBlock(JParser.BlockContext ctx) {
         Block block = new Block();
         for (JParser.StatementContext stat : ctx.statement()) {
-            OutputModelObject omo = visit(stat);
+            Stat omo = (Stat) visit(stat);
             if (omo instanceof VarDef) {
                 block.locals.add(omo); // include block statemets here //for loop with Jparser.statements
             } else {
@@ -209,5 +209,15 @@ public class CodeGenerator extends JBaseVisitor<OutputModelObject> {
     @Override
     public OutputModelObject visitParExpression(JParser.ParExpressionContext ctx) {
         return visit(ctx.expression());
+    }
+
+    @Override
+    public OutputModelObject visitWhileStat(JParser.WhileStatContext ctx) {
+        return new WhileStat((Expr) visit(ctx.parExpression()), (Stat) visit(ctx.statement()));
+    }
+
+    @Override
+    public OutputModelObject visitBlockStat(JParser.BlockStatContext ctx) {
+        return visit(ctx.block());
     }
 }
