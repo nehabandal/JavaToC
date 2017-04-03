@@ -14,7 +14,7 @@ public class VarDef extends Stat {
     @ModelElement
     String name;
 
-    protected VarDef(Type type, String name) {
+    private VarDef(Type type, String name) {
         this.type = type;
         this.name = name;
     }

@@ -6,13 +6,12 @@ import java.util.List;
 /**
  * Created by npbandal on 4/1/17.
  */
-public class PrintStat extends Stat {
-    public String formattedString;
-
+public class PrintStat extends PrintStringStat {
     public
-    List<String> args = new ArrayList<>();
+    @ModelElement
+    List<Expr> args = new ArrayList<>();
 
     public PrintStat(String formattedString) {
-        this.formattedString = formattedString;
+        super(formattedString);
     }
 }

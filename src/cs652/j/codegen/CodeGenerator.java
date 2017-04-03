@@ -5,12 +5,12 @@ import cs652.j.parser.JBaseVisitor;
 import cs652.j.parser.JParser;
 import cs652.j.semantics.JField;
 import cs652.j.semantics.JMethod;
+import org.antlr.symtab.Scope;
+import org.antlr.symtab.Symbol;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.stringtemplate.v4.STGroup;
 import org.stringtemplate.v4.STGroupFile;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 
 public class CodeGenerator extends JBaseVisitor<OutputModelObject> {
@@ -82,7 +82,7 @@ public class CodeGenerator extends JBaseVisitor<OutputModelObject> {
     public OutputModelObject visitPrintStat(JParser.PrintStatContext ctx) {
         PrintStat printStat = new PrintStat(ctx.STRING().getText());
         for (JParser.ExpressionContext expression : ctx.expressionList().expression()) {
-            printStat.args.add(expression.getText());
+            printStat.args.add((Expr) visit(expression));
         }
         return printStat;
     }
@@ -106,7 +106,7 @@ public class CodeGenerator extends JBaseVisitor<OutputModelObject> {
             if (omo instanceof MethodDef) {
                 classDef.methods.add((MethodDef) omo);
             } else {
-
+                classDef.fields.add((VarDef) visit(classBodyDeclarationContext.fieldDeclaration()));
             }
         }
         return classDef;
@@ -147,7 +147,7 @@ public class CodeGenerator extends JBaseVisitor<OutputModelObject> {
 
     @Override
     public OutputModelObject visitFieldDeclaration(JParser.FieldDeclarationContext ctx) {
-        return super.visitFieldDeclaration(ctx);
+        return VarDef.create(new Type(ctx.jType().getText()), ctx.ID().getText());
     }
 
     @Override
@@ -170,6 +170,13 @@ public class CodeGenerator extends JBaseVisitor<OutputModelObject> {
         return new VarRef(ctx.getText());
     }
 
+    private JParser.BlockContext getBlockContext(ParserRuleContext ctx) {
+        if (ctx instanceof JParser.BlockContext) {
+            return (JParser.BlockContext) ctx;
+        }
+        return getBlockContext(ctx.getParent());
+    }
+
     @Override
     public OutputModelObject visitMethodCall(JParser.MethodCallContext ctx) {
         return new MethodCall();
@@ -183,8 +190,10 @@ public class CodeGenerator extends JBaseVisitor<OutputModelObject> {
         Expr lhs = new TypeCast(new Type(expressionContext.type.getName()), (Expr) visit(expressionContext));
         methodCall.args.add(lhs);
 
-        for (JParser.ExpressionContext arg : ctx.expressionList().expression()) {
-            methodCall.args.add((Expr) visit(arg));
+        if (ctx.expressionList() != null) {
+            for (JParser.ExpressionContext arg : ctx.expressionList().expression()) {
+                methodCall.args.add((Expr) visit(arg));
+            }
         }
         return methodCall;
     }
@@ -219,5 +228,15 @@ public class CodeGenerator extends JBaseVisitor<OutputModelObject> {
     @Override
     public OutputModelObject visitBlockStat(JParser.BlockStatContext ctx) {
         return visit(ctx.block());
+    }
+
+    @Override
+    public OutputModelObject visitThisRef(JParser.ThisRefContext ctx) {
+        return super.visitThisRef(ctx);
+    }
+
+    @Override
+    public OutputModelObject visitFieldRef(JParser.FieldRefContext ctx) {
+        return new FieldRef((Expr) visit(ctx.expression()), ctx.ID().getText());
     }
 }

@@ -30,7 +30,7 @@ ClassDef(class, fields, methods, vtable) ::= <<
 // D e f i n e  C l a s s  <class.name>
 typedef struct {
     metadata *clazz;
-    <fields>
+    <fields; separator="\n">
 } <class.name>;
 
 <class.methods:{ m | #define <class.name>_<m.funcName>_SLOT <i0>}>
@@ -80,7 +80,7 @@ PrimitiveTypeSpec(p)::= "<p.name>"
 
 AssignStat(a,left,right) ::= "<left> = <right>;"
 PrintStringStat(p)  ::= "printf(<p.formattedString>);"
-PrintStat(p,args)   ::= "printf(<p.formattedString>, <p.args; separator=\", \">);"
+PrintStat(p,args)   ::= "printf(<p.formattedString>, <args; separator=\", \">);"
 CallStat(c,call)    ::= "<call>"
 CtorCall(ctor)      ::= "((<ctor.className> *)alloc(&<ctor.className>_metadata))"
 ReturnStat(r,expr)  ::= ""
@@ -99,7 +99,7 @@ NullRef(n)          ::= "NULL"
 
 LiteralRef(lit)     ::= "<lit.literal>"
 VarRef(v)           ::= "<v.variable>"
-FieldRef(f, object) ::= ""
+FieldRef(f, object) ::= "<object>-><f.field>"
 ThisRef(t)          ::= "this"
 MethodCall(m, receiver, receiverType, fptrType, args) ::= <<
 (*(void (*)(T *,int,float))(*(t)->clazz->_vtable)[T_foo_SLOT])(<args; separator=",">);
