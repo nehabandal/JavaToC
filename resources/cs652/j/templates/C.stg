@@ -80,7 +80,7 @@ PrimitiveTypeSpec(p)::= "<p.name>"
 
 AssignStat(a,left,right) ::= "<left> = <right>;<\n>"
 PrintStringStat(p)  ::= "printf(<p.formattedString>);"
-PrintStat(p,args)   ::= "printf(<p.args; separator=\", \">);"
+PrintStat(p,args)   ::= "printf(<p.formattedString>, <p.args; separator=\", \">);"
 CallStat(c,call)    ::= "<call>"
 CtorCall(ctor)      ::= "((<ctor.className> *)alloc(&<ctor.className>_metadata))"
 ReturnStat(r,expr)  ::= ""
