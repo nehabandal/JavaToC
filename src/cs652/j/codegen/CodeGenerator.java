@@ -185,6 +185,7 @@ public class CodeGenerator extends JBaseVisitor<OutputModelObject> {
     @Override
     public OutputModelObject visitQMethodCall(JParser.QMethodCallContext ctx) {
         MethodCall methodCall = new MethodCall();
+        methodCall.name = ctx.ID().getText();
         JParser.ExpressionContext expressionContext = ctx.expression();
 
         Expr lhs = new TypeCast(new Type(expressionContext.type.getName()), (Expr) visit(expressionContext));
@@ -238,5 +239,10 @@ public class CodeGenerator extends JBaseVisitor<OutputModelObject> {
     @Override
     public OutputModelObject visitFieldRef(JParser.FieldRefContext ctx) {
         return new FieldRef((Expr) visit(ctx.expression()), ctx.ID().getText());
+    }
+
+    @Override
+    public OutputModelObject visitReturnStat(JParser.ReturnStatContext ctx) {
+        return new ReturnStat((Expr) visit(ctx.expression()));
     }
 }

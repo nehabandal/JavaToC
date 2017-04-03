@@ -33,13 +33,13 @@ typedef struct {
     <fields; separator="\n">
 } <class.name>;
 
-<class.methods:{ m | #define <class.name>_<m.funcName>_SLOT <i0>}>
+<class.methods:{ m | #define <class.name>_<m.funcName>_SLOT <i0>}; separator="\n">
 
 
-<methods>
+<methods; separator="\n">
 
 void (*<class.name>_vtable[])() = {
-    <class.methods:{ m | (<m.returnType> (*)())&<class.name>_<m.funcName>}; separator=",\n">
+    <class.methods:{ m | (void (*)())&<class.name>_<m.funcName>}; separator=",\n">
 };
 
 metadata <class.name>_metadata = {"<class.name>", sizeof(<class.name>), &<class.name>_vtable};
@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
 
 Block(block, locals, instrs) ::= <<
 <if(locals)>
-<locals>
+<locals; separator="\n">
 
 <endif>
 <instrs; separator="\n">
@@ -83,7 +83,7 @@ PrintStringStat(p)  ::= "printf(<p.formattedString>);"
 PrintStat(p,args)   ::= "printf(<p.formattedString>, <args; separator=\", \">);"
 CallStat(c,call)    ::= "<call>"
 CtorCall(ctor)      ::= "((<ctor.className> *)alloc(&<ctor.className>_metadata))"
-ReturnStat(r,expr)  ::= ""
+ReturnStat(r,expr)  ::= "return <expr>;"
 WhileStat(w,condition, stat) ::= <<
 while ( <condition> ) {
     <stat>
@@ -102,7 +102,7 @@ VarRef(v)           ::= "<v.variable>"
 FieldRef(f, object) ::= "<object>-><f.field>"
 ThisRef(t)          ::= "this"
 MethodCall(m, receiver, receiverType, fptrType, args) ::= <<
-(*(void (*)(T *,int,float))(*(t)->clazz->_vtable)[T_foo_SLOT])(<args; separator=",">);
+(*(void (*)(T *,int,float))(*(t)->clazz->_vtable)[<receiverType>_<m.name>_SLOT])(<args; separator=",">);
 >>
 
 FuncPtrType(f, returnType, argTypes) ::= ""
