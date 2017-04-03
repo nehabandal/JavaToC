@@ -5,10 +5,7 @@ package cs652.j.codegen.model;
  */
 public class AssignStat extends OutputModelObject {
 
-    public String left, right;
-
-    public AssignStat(String t, String i) {
-        left = t;
-        right = i;
-    }
+    public
+    @ModelElement
+    OutputModelObject left, right;
 }

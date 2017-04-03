@@ -1,22 +1,32 @@
 package cs652.j.codegen.model;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Created by npbandal on 4/1/17.
  */
 public class VarDef extends OutputModelObject {
-    public
-    @ModelElement
-    String type;
+    public boolean isParameter;
 
     public
     @ModelElement
-    String id;
+    Type type;
 
-    public VarDef(String t, String i) {
-        type = t;
-        id = i;
+    public
+    @ModelElement
+    String name;
+
+    protected VarDef(Type type, String name) {
+        this.type = type;
+        this.name = name;
     }
+
+    public static VarDef createParameter(Type type, String name) {
+        VarDef varDef = create(type, name);
+        varDef.isParameter = true;
+        return varDef;
+    }
+
+    public static VarDef create(Type type, String name) {
+        return new VarDef(type, name);
+    }
+
 }

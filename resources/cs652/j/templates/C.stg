@@ -24,9 +24,32 @@ object *alloc(metadata *clazz) {
 >>
 
 ClassDef(class, fields, methods, vtable) ::= <<
+
+
+
+// D e f i n e  C l a s s  <class.name>
+typedef struct {
+    metadata *clazz;
+    <fields>
+} <class.name>;
+
+<class.methods:{ m | #define <class.name>_<m.funcName>_SLOT <i0>}>
+
+
+<methods>
+
+void (*<class.name>_vtable[])() = {
+    <class.methods:{ m | (<m.returnType> (*)())&<class.name>_<m.funcName>}; separator=",\n">
+};
+
+metadata <class.name>_metadata = {"<class.name>", sizeof(<class.name>), &<class.name>_vtable};
 >>
 
 MethodDef(m,funcName,returnType,args,body) ::= <<
+<m.returnType> <m.className>_<m.funcName>(<args; separator=", ">)
+{
+    <body>
+}
 >>
 
 MainMethod(main,funcName,returnType,args,body) ::= <<
@@ -39,13 +62,15 @@ int main(int argc, char *argv[])
 >>
 
 Block(block, locals, instrs) ::= <<
+<if(locals)>
 <locals>
 
+<endif>
 <instrs>
 >>
 
 VarDef(var, type)   ::= <<
-<var.type> <var.id>;
+<type><if(!var.isParameter)> <endif><var.name><if(!var.isParameter)>;<endif>
 >>
 
 FuncName(f)         ::= ""
@@ -53,11 +78,11 @@ FuncName(f)         ::= ""
 ObjectTypeSpec(o)   ::= ""
 PrimitiveTypeSpec(p)::= "<p.name>"
 
-AssignStat(a,left,right) ::= "<a.left> = <a.right>;<\n>"
-PrintStringStat(p)  ::= ""
-PrintStat(p,args)   ::= "printf(<p.args>);"
-CallStat(c,call)    ::= ""
-CtorCall(ctor)      ::= ""
+AssignStat(a,left,right) ::= "<left> = <right>;<\n>"
+PrintStringStat(p)  ::= "printf();"
+PrintStat(p,args)   ::= "printf(<p.args; separator=\", \">);"
+CallStat(c,call)    ::= "<call>"
+CtorCall(ctor)      ::= "((<ctor.className> *)alloc(&<ctor.className>_metadata))"
 ReturnStat(r,expr)  ::= ""
 WhileStat(w,condition, stat) ::= ""
 IfStat(i,condition, stat) ::= ""
@@ -66,12 +91,14 @@ IfElseStat(i,condition, stat, elseStat) ::= <<
 
 NullRef(n)          ::= "NULL"
 
-LiteralRef(lit)     ::= ""
-VarRef(v)           ::= ""
+LiteralRef(lit)     ::= "<lit.literal>"
+VarRef(v)           ::= "<v.variable>"
 FieldRef(f, object) ::= ""
 ThisRef(t)          ::= "this"
 MethodCall(m, receiver, receiverType, fptrType, args) ::= <<
+(*(void (*)(T *,int,float))(*(t)->clazz->_vtable)[T_foo_SLOT])(<args; separator=",">);
 >>
 
 FuncPtrType(f, returnType, argTypes) ::= ""
-TypeCast(cast, type, expr) ::= ""
+TypeCast(cast, type, expr) ::= "((<type>)<expr>)"
+Type(type) ::= "<type.name><if(!type.isPrimitive)> *<endif>"
