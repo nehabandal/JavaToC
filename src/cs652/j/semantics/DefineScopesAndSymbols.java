@@ -97,7 +97,7 @@ public class DefineScopesAndSymbols extends JBaseListener {
 	@Override
 	public void enterFormalParameter(JParser.FormalParameterContext ctx) {
 		Type type = (Type) currentScope.resolve(ctx.jType().getText());
-		VariableSymbol var = new VariableSymbol(ctx.ID().getText());
+		VariableSymbol var = new JField(ctx.ID().getText());
 		var.setType(type);
 		var.setScope(currentScope);
 		currentScope.define(var);
@@ -106,7 +106,7 @@ public class DefineScopesAndSymbols extends JBaseListener {
 	@Override
 	public void enterLocalVariableDeclaration(JParser.LocalVariableDeclarationContext ctx) {
 		Type type = (Type) currentScope.resolve(ctx.jType().getText());
-		VariableSymbol var = new VariableSymbol(ctx.ID().getText());
+		VariableSymbol var = new JField(ctx.ID().getText());
 		var.setType(type);
 		var.setScope(currentScope);
 		currentScope.define(var);
