@@ -170,7 +170,11 @@ public class CodeGenerator extends JBaseVisitor<OutputModelObject> {
         Scope scope = getBlockContext(ctx).scope;
         JField jField = resolve(scope, symbolName);
 
-        return new VarRef(jField, symbolName);
+        if (jField.getScope() instanceof JClass) {
+            return new ThisRef(jField, symbolName);
+        } else {
+            return new VarRef(jField, symbolName);
+        }
     }
 
     private JField resolve(Scope scope, String symbolName) {

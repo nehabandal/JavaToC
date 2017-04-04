@@ -80,7 +80,7 @@ PrimitiveTypeSpec(p)::= "<p.name>"
 AssignStat(a,left,right) ::= "<left> = <right>;"
 PrintStringStat(p)  ::= "printf(<p.formattedString>);"
 PrintStat(p,args)   ::= "printf(<p.formattedString>, <args; separator=\", \">);"
-CallStat(c,call)    ::= "<call>"
+CallStat(c,call)    ::= "<call>;"
 CtorCall(ctor)      ::= "((<ctor.className> *)alloc(&<ctor.className>_metadata))"
 ReturnStat(r,expr)  ::= "return <expr>;"
 WhileStat(w,condition, stat) ::= <<
@@ -99,9 +99,9 @@ NullRef(n)          ::= "NULL"
 LiteralRef(lit)     ::= "<lit.literal>"
 VarRef(v)           ::= "<v.variable>"
 FieldRef(f, object) ::= "<object>-><f.field>"
-ThisRef(t)          ::= "this"
+ThisRef(t)          ::= "this-><t.variable>"
 MethodCall(m, receiver, receiverType, fptrType, args) ::= <<
-(<fptrType>(*(<receiver>)->clazz->_vtable)[<m.receiverType.name>_<m.name>_SLOT])(<args; separator=",">);
+(<fptrType>(*(<receiver>)->clazz->_vtable)[<m.receiverType.name>_<m.name>_SLOT])(<args; separator=",">)
 >>
 
 FuncPtrType(f, returnType, argTypes) ::= "*(<returnType> (*)(<argTypes; separator=\",\">))"
