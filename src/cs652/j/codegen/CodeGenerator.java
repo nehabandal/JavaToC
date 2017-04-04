@@ -267,7 +267,7 @@ public class CodeGenerator extends JBaseVisitor<OutputModelObject> {
         }
         methodCall.fptrType = funcPtrType;
 
-        methodCall.args.add(new TypeCast(lhsExpr));
+        methodCall.args.add(new TypeCast(new DataType(jMethod.getEnclosingScope().getName()), lhsExpr));
         if (ctx.expressionList() != null) {
             for (JParser.ExpressionContext arg : ctx.expressionList().expression()) {
                 methodCall.args.add((Expr) visit(arg));
