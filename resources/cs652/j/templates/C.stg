@@ -33,12 +33,12 @@ typedef struct {
     <fields; separator="\n">
 } <class.name>;
 
-<class.methods:{ m | #define <class.name>_<m.funcName>_SLOT <i0>}; separator="\n">
+<class.vtable:{ m | #define <class.name>_<m.funcName>_SLOT <i0>}; separator="\n">
 
 
 <methods; separator="\n">
 void (*<class.name>_vtable[])() = {
-    <class.methods:{ m | (void (*)())&<class.name>_<m.funcName>}; separator=",\n">
+    <class.vtable:{ m | (void (*)())&<m.className>_<m.funcName>}; separator=",\n">
 };
 
 metadata <class.name>_metadata = {"<class.name>", sizeof(<class.name>), &<class.name>_vtable};

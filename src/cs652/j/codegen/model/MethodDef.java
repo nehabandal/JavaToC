@@ -6,10 +6,7 @@ import java.util.List;
 /**
  * Created by npbandal on 4/2/17.
  */
-public class MethodDef extends OutputModelObject {
-
-    public String className;
-
+public class MethodDef extends MethodDefVTableInfo {
     public
     @ModelElement
     Block body;
@@ -22,7 +19,7 @@ public class MethodDef extends OutputModelObject {
     @ModelElement
     String returnType;
 
-    public
-    @ModelElement
-    String funcName;
+    public MethodDef(String className, String funcName) {
+        super(className, funcName);
+    }
 }

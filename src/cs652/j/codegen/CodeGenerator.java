@@ -11,7 +11,10 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.stringtemplate.v4.STGroup;
 import org.stringtemplate.v4.STGroupFile;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 public class CodeGenerator extends JBaseVisitor<OutputModelObject> {
     public final STGroup templates;
@@ -91,10 +94,30 @@ public class CodeGenerator extends JBaseVisitor<OutputModelObject> {
         ClassDef classDef = (ClassDef) visit(ctx.classBody());
         classDef.name = ctx.name.getText();
 
-        for (MethodDef m : classDef.methods) {
-            classDef.addVTable(m);
-        }
+        classDef.vtable.addAll(getAllMethodNames(ctx.scope));
         return classDef;
+    }
+
+    private List<MethodDefVTableInfo> getAllMethodNames(JClass jClass) {
+        if (jClass == null) {
+            return new ArrayList<>();
+        }
+        List<MethodDefVTableInfo> vTable = getAllMethodNames((JClass) jClass.resolve(jClass.getSuperClassName()));
+        for (JMethod m : (Set<JMethod>) (Set) jClass.getMethods()) {
+            MethodDefVTableInfo current = new MethodDefVTableInfo(m.getEnclosingScope().getName(), m.getName());
+            boolean add = true;
+            for (MethodDefVTableInfo parentMethod : vTable) {
+                if (current.funcName.equals(parentMethod.funcName)) {
+                    parentMethod.className = current.className;
+                    add = false;
+                    break;
+                }
+            }
+            if (add) {
+                vTable.add(current);
+            }
+        }
+        return vTable;
     }
 
     @Override
@@ -123,11 +146,9 @@ public class CodeGenerator extends JBaseVisitor<OutputModelObject> {
 
     @Override
     public OutputModelObject visitMethodDeclaration(JParser.MethodDeclarationContext ctx) {
-        MethodDef methodDef = new MethodDef();
-        methodDef.body = (Block) visit(ctx.methodBody());
         JMethod scope = ctx.scope;
-        methodDef.funcName = scope.getName();
-        methodDef.className = scope.getEnclosingScope().getName();
+        MethodDef methodDef = new MethodDef(scope.getEnclosingScope().getName(), scope.getName());
+        methodDef.body = (Block) visit(ctx.methodBody());
         methodDef.returnType = scope.getType().getName();
 
         List<JField> fields = (List) scope.getSymbols();
