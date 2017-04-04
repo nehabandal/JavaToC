@@ -8,6 +8,7 @@ import cs652.j.semantics.JField;
 import cs652.j.semantics.JMethod;
 import org.antlr.symtab.Scope;
 import org.antlr.symtab.Symbol;
+import org.antlr.symtab.TypedSymbol;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.stringtemplate.v4.STGroup;
 import org.stringtemplate.v4.STGroupFile;
@@ -19,7 +20,7 @@ import java.util.Set;
 
 public class CodeGenerator extends JBaseVisitor<OutputModelObject> {
     public final STGroup templates;
-    private final  String fileName;
+    private final String fileName;
 
 
     public CodeGenerator(String fileName) {
@@ -78,7 +79,9 @@ public class CodeGenerator extends JBaseVisitor<OutputModelObject> {
         AssignStat assignStat = new AssignStat();
         assignStat.left = (Expr) visit(ctx.expression(0));
         assignStat.right = (Expr) visit(ctx.expression(1));
-        if (!assignStat.left.type.equals(assignStat.right.type)) {
+        if (assignStat.right.type == null || (
+                !assignStat.right.type.isPrimitive
+                        && !assignStat.left.type.equals(assignStat.right.type))) {
             assignStat.right = new TypeCast(assignStat.left.type, assignStat.right);
         }
         return assignStat;
@@ -193,17 +196,18 @@ public class CodeGenerator extends JBaseVisitor<OutputModelObject> {
     public OutputModelObject visitIdRef(JParser.IdRefContext ctx) {
         String symbolName = ctx.getText();
         Scope scope = getBlockContext(ctx).scope;
-        JField jField = resolve(scope, symbolName);
+        JField jField = (JField) resolve(scope, symbolName);
 
         if (jField.getScope() instanceof JClass) {
-            return new ThisRef(jField, symbolName);
+            ThisRef thisRef = new ThisRef((JClass) jField.getScope());
+            return new FieldRef(thisRef, jField);
         } else {
             return new VarRef(jField, symbolName);
         }
     }
 
-    private JField resolve(Scope scope, String symbolName) {
-        return (JField) scope.resolve(symbolName);
+    private TypedSymbol resolve(Scope scope, String symbolName) {
+        return (TypedSymbol) scope.resolve(symbolName);
     }
 
     private JParser.BlockContext getBlockContext(ParserRuleContext ctx) {
@@ -215,15 +219,38 @@ public class CodeGenerator extends JBaseVisitor<OutputModelObject> {
 
     @Override
     public OutputModelObject visitMethodCall(JParser.MethodCallContext ctx) {
-        return new MethodCall(ctx.ID().getText(), null);
+        String symbolName = ctx.ID().getText();
+        Scope scope = getBlockContext(ctx).scope;
+        JMethod jMethod = (JMethod) resolve(scope, symbolName);
+
+        MethodCall methodCall = new MethodCall(ctx.ID().getText(), new DataType(ctx.type.getName()));
+        methodCall.receiver = new ThisRef((JClass) jMethod.getScope());
+        methodCall.receiverType = methodCall.receiver.type;
+
+        FuncPtrType funcPtrType = new FuncPtrType();
+        funcPtrType.returnType = methodCall.type;
+        methodCall.type = funcPtrType.returnType;
+
+        for (JField args : (List<JField>) (List) jMethod.getAllSymbols()) {
+            funcPtrType.argTypes.add(new DataType(args.getType().getName()));
+        }
+        methodCall.fptrType = funcPtrType;
+
+        methodCall.args.add(new TypeCast(methodCall.receiver));
+        if (ctx.expressionList() != null) {
+            for (JParser.ExpressionContext arg : ctx.expressionList().expression()) {
+                methodCall.args.add((Expr) visit(arg));
+            }
+        }
+        return methodCall;
+
     }
 
     @Override
     public OutputModelObject visitQMethodCall(JParser.QMethodCallContext ctx) {
         MethodCall methodCall = new MethodCall(ctx.ID().getText(), null);
-        JParser.ExpressionContext expressionContext = ctx.expression();
 
-        Expr lhsExpr = (Expr) visit(expressionContext);
+        Expr lhsExpr = (Expr) visit(ctx.expression());
         methodCall.receiver = lhsExpr;
         methodCall.receiverType = lhsExpr.type;
 
@@ -283,7 +310,7 @@ public class CodeGenerator extends JBaseVisitor<OutputModelObject> {
 
     @Override
     public OutputModelObject visitThisRef(JParser.ThisRefContext ctx) {
-        return super.visitThisRef(ctx);
+        return new ThisRef((JClass) ctx.type);
     }
 
     @Override

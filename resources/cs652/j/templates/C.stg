@@ -99,7 +99,7 @@ NullRef(n)          ::= "NULL"
 LiteralRef(lit)     ::= "<lit.literal>"
 VarRef(v)           ::= "<v.variable>"
 FieldRef(f, object) ::= "<object>-><f.field>"
-ThisRef(t)          ::= "this-><t.variable>"
+ThisRef(t)          ::= "this"
 MethodCall(m, receiver, receiverType, fptrType, args) ::= <<
 (<fptrType>(*(<receiver>)->clazz->_vtable)[<m.receiverType.name>_<m.name>_SLOT])(<args; separator=",">)
 >>
