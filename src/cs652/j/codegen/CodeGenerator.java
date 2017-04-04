@@ -3,10 +3,10 @@ package cs652.j.codegen;
 import cs652.j.codegen.model.*;
 import cs652.j.parser.JBaseVisitor;
 import cs652.j.parser.JParser;
+import cs652.j.semantics.JClass;
 import cs652.j.semantics.JField;
 import cs652.j.semantics.JMethod;
 import org.antlr.symtab.Scope;
-import org.antlr.symtab.Symbol;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.stringtemplate.v4.STGroup;
 import org.stringtemplate.v4.STGroupFile;
@@ -14,18 +14,17 @@ import org.stringtemplate.v4.STGroupFile;
 import java.util.List;
 
 public class CodeGenerator extends JBaseVisitor<OutputModelObject> {
-    public STGroup templates;
-    public String fileName;
+    public final STGroup templates;
+    private final  String fileName;
 
 
     public CodeGenerator(String fileName) {
         this.fileName = fileName;
-        templates = new STGroupFile("cs652/j/templates/C.stg");
+        this.templates = new STGroupFile("cs652/j/templates/C.stg");
     }
 
     public CFile generate(ParserRuleContext tree) {
-        CFile file = (CFile) visit(tree);
-        return file;
+        return (CFile) visit(tree);
     }
 
     @Override
@@ -67,7 +66,7 @@ public class CodeGenerator extends JBaseVisitor<OutputModelObject> {
     @Override
     public OutputModelObject visitLocalVariableDeclaration(JParser.LocalVariableDeclarationContext ctx) {
 
-        return VarDef.create(new Type(ctx.jType().getText()), ctx.ID().getText());
+        return VarDef.create(new DataType(ctx.jType().getText()), ctx.ID().getText());
     }
 
     @Override
@@ -134,7 +133,7 @@ public class CodeGenerator extends JBaseVisitor<OutputModelObject> {
         List<JField> fields = (List) scope.getSymbols();
         for (JField field : fields) {
             String type = field.getType().getName();
-            methodDef.args.add(VarDef.createParameter(new Type(type), field.getName()));
+            methodDef.args.add(VarDef.createParameter(new DataType(type), field.getName()));
         }
 
         return methodDef;
@@ -147,7 +146,7 @@ public class CodeGenerator extends JBaseVisitor<OutputModelObject> {
 
     @Override
     public OutputModelObject visitFieldDeclaration(JParser.FieldDeclarationContext ctx) {
-        return VarDef.create(new Type(ctx.jType().getText()), ctx.ID().getText());
+        return VarDef.create(new DataType(ctx.jType().getText()), ctx.ID().getText());
     }
 
     @Override
@@ -167,7 +166,15 @@ public class CodeGenerator extends JBaseVisitor<OutputModelObject> {
 
     @Override
     public OutputModelObject visitIdRef(JParser.IdRefContext ctx) {
-        return new VarRef(ctx.getText());
+        String symbolName = ctx.getText();
+        Scope scope = getBlockContext(ctx).scope;
+        JField jField = resolve(scope, symbolName);
+
+        return new VarRef(jField, symbolName);
+    }
+
+    private JField resolve(Scope scope, String symbolName) {
+        return (JField) scope.resolve(symbolName);
     }
 
     private JParser.BlockContext getBlockContext(ParserRuleContext ctx) {
@@ -188,9 +195,23 @@ public class CodeGenerator extends JBaseVisitor<OutputModelObject> {
         methodCall.name = ctx.ID().getText();
         JParser.ExpressionContext expressionContext = ctx.expression();
 
-        Expr lhs = new TypeCast(new Type(expressionContext.type.getName()), (Expr) visit(expressionContext));
-        methodCall.args.add(lhs);
+        Expr lhsExpr = (Expr) visit(expressionContext);
+        methodCall.receiver = lhsExpr;
+        methodCall.receiverType = lhsExpr.type;
 
+
+        JClass jClass = (JClass) getBlockContext(ctx).scope.resolve(methodCall.receiverType.name);
+        JMethod jMethod = (JMethod) jClass.resolveMethod(methodCall.name);
+
+        FuncPtrType funcPtrType = new FuncPtrType();
+        funcPtrType.returnType = new DataType(jMethod.getType().getName());
+
+        for (JField args : (List<JField>) (List) jMethod.getAllSymbols()) {
+            funcPtrType.argTypes.add(new DataType(args.getType().getName()));
+        }
+        methodCall.fptrType = funcPtrType;
+
+        methodCall.args.add(new TypeCast(lhsExpr));
         if (ctx.expressionList() != null) {
             for (JParser.ExpressionContext arg : ctx.expressionList().expression()) {
                 methodCall.args.add((Expr) visit(arg));

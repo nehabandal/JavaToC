@@ -6,14 +6,10 @@ package cs652.j.codegen.model;
 public class TypeCast extends Expr {
     public
     @ModelElement
-    Type type;
-
-    public
-    @ModelElement
     Expr expr;
 
-    public TypeCast(Type type, Expr expr) {
-        this.type = type;
+    public TypeCast(Expr expr) {
+        this.type = expr.type;
         this.expr = expr;
     }
 }

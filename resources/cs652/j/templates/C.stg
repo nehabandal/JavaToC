@@ -37,7 +37,6 @@ typedef struct {
 
 
 <methods; separator="\n">
-
 void (*<class.name>_vtable[])() = {
     <class.methods:{ m | (void (*)())&<class.name>_<m.funcName>}; separator=",\n">
 };
@@ -102,9 +101,9 @@ VarRef(v)           ::= "<v.variable>"
 FieldRef(f, object) ::= "<object>-><f.field>"
 ThisRef(t)          ::= "this"
 MethodCall(m, receiver, receiverType, fptrType, args) ::= <<
-(*(void (*)(T *,int,float))(*(t)->clazz->_vtable)[<receiverType>_<m.name>_SLOT])(<args; separator=",">);
+(<fptrType>(*(<receiver>)->clazz->_vtable)[<m.receiverType.name>_<m.name>_SLOT])(<args; separator=",">);
 >>
 
-FuncPtrType(f, returnType, argTypes) ::= ""
+FuncPtrType(f, returnType, argTypes) ::= "*(<returnType> (*)(<argTypes; separator=\",\">))"
 TypeCast(cast, type, expr) ::= "((<type>)<expr>)"
-Type(type) ::= "<type.name><if(!type.isPrimitive)> *<endif>"
+DataType(type) ::= "<type.name><if(!type.isPrimitive)> *<endif>"

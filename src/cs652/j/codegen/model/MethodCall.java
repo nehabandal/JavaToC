@@ -14,6 +14,15 @@ public class MethodCall extends Expr {
     List<Expr> args = new ArrayList<>();
 
     public
-    String receiverType;
+    @ModelElement
+    DataType receiverType;
+
+    public
+    @ModelElement
+    Expr receiver;
+
+    public
+    @ModelElement
+    FuncPtrType fptrType;
 
 }
