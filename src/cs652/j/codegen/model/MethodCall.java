@@ -25,4 +25,8 @@ public class MethodCall extends Expr {
     @ModelElement
     FuncPtrType fptrType;
 
+    public MethodCall(String name, DataType type) {
+        super(type);
+        this.name = name;
+    }
 }

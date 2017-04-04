@@ -21,4 +21,19 @@ public class DataType extends OutputModelObject {
     public static boolean isPrimitive(String type) {
         return new HashSet<>(Arrays.asList("int", "float", "void")).contains(type);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        DataType dataType = (DataType) o;
+
+        return name != null ? name.equals(dataType.name) : dataType.name == null;
+    }
+
+    @Override
+    public int hashCode() {
+        return name != null ? name.hashCode() : 0;
+    }
 }

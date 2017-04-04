@@ -10,8 +10,8 @@ public class VarRef extends Expr {
     public String variable;
 
     public VarRef(JField jField, String variable) {
+        super(new DataType(jField.getType().getName()));
         this.jField = jField;
         this.variable = variable;
-        this.type = new DataType(jField.getType().getName());
     }
 }

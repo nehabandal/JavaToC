@@ -81,7 +81,7 @@ AssignStat(a,left,right) ::= "<left> = <right>;"
 PrintStringStat(p)  ::= "printf(<p.formattedString>);"
 PrintStat(p,args)   ::= "printf(<p.formattedString>, <args; separator=\", \">);"
 CallStat(c,call)    ::= "<call>;"
-CtorCall(ctor)      ::= "((<ctor.className> *)alloc(&<ctor.className>_metadata))"
+CtorCall(ctor)      ::= "alloc(&<ctor.className>_metadata)"
 ReturnStat(r,expr)  ::= "return <expr>;"
 WhileStat(w,condition, stat) ::= <<
 while ( <condition> ) {

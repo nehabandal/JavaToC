@@ -7,7 +7,8 @@ public class CtorCall extends Expr {
     public
     String className;
 
-    public CtorCall(String className) {
+    public CtorCall(String className, DataType type) {
+        super(type);
         this.className = className;
     }
 }

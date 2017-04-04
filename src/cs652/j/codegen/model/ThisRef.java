@@ -10,8 +10,8 @@ public class ThisRef extends Expr {
     public String variable;
 
     public ThisRef(JField jField, String variable) {
+        super(new DataType(jField.getType().getName()));
         this.jField = jField;
         this.variable = variable;
-        this.type = new DataType(jField.getType().getName());
     }
 }

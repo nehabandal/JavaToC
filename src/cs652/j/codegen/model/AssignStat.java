@@ -7,5 +7,5 @@ public class AssignStat extends Stat {
 
     public
     @ModelElement
-    OutputModelObject left, right;
+    Expr left, right;
 }

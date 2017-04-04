@@ -9,7 +9,11 @@ public class TypeCast extends Expr {
     Expr expr;
 
     public TypeCast(Expr expr) {
-        this.type = expr.type;
+        this(expr.type, expr);
+    }
+
+    public TypeCast(DataType type, Expr expr) {
+        super(type);
         this.expr = expr;
     }
 }
