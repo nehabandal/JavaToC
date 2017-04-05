@@ -288,7 +288,7 @@ public class CodeGenerator extends JBaseVisitor<OutputModelObject> {
             Expr argExpr = (Expr) visit(arg);
             DataType rhArgType = argExpr.type;
 
-            if (rhArgType == null || (!rhArgType.isPrimitive && !lhArgType.equals(rhArgType))) {
+            if (rhArgType == null || (!rhArgType.isPrimitive)) {
                 argExpr = new TypeCast(lhArgType, argExpr);
             }
 
