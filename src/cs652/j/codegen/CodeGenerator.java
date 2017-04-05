@@ -7,14 +7,12 @@ import cs652.j.semantics.JClass;
 import cs652.j.semantics.JField;
 import cs652.j.semantics.JMethod;
 import org.antlr.symtab.Scope;
-import org.antlr.symtab.Symbol;
 import org.antlr.symtab.TypedSymbol;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.stringtemplate.v4.STGroup;
 import org.stringtemplate.v4.STGroupFile;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -71,7 +69,7 @@ public class CodeGenerator extends JBaseVisitor<OutputModelObject> {
     @Override
     public OutputModelObject visitLocalVariableDeclaration(JParser.LocalVariableDeclarationContext ctx) {
 
-        return VarDef.create(new DataType(ctx.jType().getText()), ctx.ID().getText());
+        return new VarDef(new DataType(ctx.jType().getText()), ctx.ID().getText());
     }
 
     @Override
@@ -100,9 +98,18 @@ public class CodeGenerator extends JBaseVisitor<OutputModelObject> {
     public OutputModelObject visitClassDeclaration(JParser.ClassDeclarationContext ctx) {
         ClassDef classDef = (ClassDef) visit(ctx.classBody());
         classDef.name = ctx.name.getText();
-
         classDef.vtable.addAll(getAllMethodNames(ctx.scope));
+        classDef.fields.addAll(getAllFields(ctx.scope));
         return classDef;
+    }
+
+    private List<VarDef> getAllFields(JClass jClass) {
+        List<VarDef> varDefs = new ArrayList<>();
+        for (JField jField : (List<JField>) (List) jClass.getFields()) {
+            VarDef varDef = new VarDef(new DataType(jField.getType().getName()), jField.getName());
+            varDefs.add(varDef);
+        }
+        return varDefs;
     }
 
     private List<MethodDefVTableInfo> getAllMethodNames(JClass jClass) {
@@ -134,8 +141,6 @@ public class CodeGenerator extends JBaseVisitor<OutputModelObject> {
             OutputModelObject omo = visit(classBodyDeclarationContext);
             if (omo instanceof MethodDef) {
                 classDef.methods.add((MethodDef) omo);
-            } else {
-                classDef.fields.add((VarDef) visit(classBodyDeclarationContext.fieldDeclaration()));
             }
         }
         return classDef;
@@ -174,7 +179,7 @@ public class CodeGenerator extends JBaseVisitor<OutputModelObject> {
 
     @Override
     public OutputModelObject visitFieldDeclaration(JParser.FieldDeclarationContext ctx) {
-        return VarDef.create(new DataType(ctx.jType().getText()), ctx.ID().getText());
+        return new VarDef(new DataType(ctx.jType().getText()), ctx.ID().getText());
     }
 
     @Override
