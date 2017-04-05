@@ -45,7 +45,7 @@ metadata <class.name>_metadata = {"<class.name>", sizeof(<class.name>), &<class.
 >>
 
 MethodDef(m,funcName,returnType,args,body) ::= <<
-<m.returnType> <m.className>_<m.funcName>(<args; separator=", ">)
+<returnType> <m.className>_<m.funcName>(<args; separator=", ">)
 {
     <body>
 }

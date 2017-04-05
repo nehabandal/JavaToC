@@ -17,7 +17,7 @@ public class MethodDef extends MethodDefVTableInfo {
 
     public
     @ModelElement
-    String returnType;
+    DataType returnType;
 
     public MethodDef(String className, String funcName) {
         super(className, funcName);

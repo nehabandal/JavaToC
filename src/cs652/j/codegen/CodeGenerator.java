@@ -161,7 +161,7 @@ public class CodeGenerator extends JBaseVisitor<OutputModelObject> {
         JMethod scope = ctx.scope;
         MethodDef methodDef = new MethodDef(scope.getEnclosingScope().getName(), scope.getName());
         methodDef.body = (Block) visit(ctx.methodBody());
-        methodDef.returnType = scope.getType().getName();
+        methodDef.returnType = new DataType(scope.getType().getName());
 
         List<JField> fields = (List) scope.getSymbols();
         for (JField field : fields) {
@@ -229,7 +229,7 @@ public class CodeGenerator extends JBaseVisitor<OutputModelObject> {
         JMethod jMethod = (JMethod) resolve(scope, symbolName);
 
         MethodCall methodCall = new MethodCall(ctx.ID().getText(), new DataType(ctx.type.getName()));
-        methodCall.receiver = new ThisRef((JClass) jMethod.getScope());
+        methodCall.receiver = new ThisRef((JClass) resolve(scope, "this").getType());
         methodCall.receiverType = methodCall.receiver.type;
 
         FuncPtrType funcPtrType = new FuncPtrType();
@@ -241,11 +241,9 @@ public class CodeGenerator extends JBaseVisitor<OutputModelObject> {
         }
         methodCall.fptrType = funcPtrType;
 
-        methodCall.args.add(new TypeCast(methodCall.receiver));
+        methodCall.args.add(new TypeCast(new ThisRef((JClass) jMethod.getScope())));
         if (ctx.expressionList() != null) {
-            for (JParser.ExpressionContext arg : ctx.expressionList().expression()) {
-                methodCall.args.add((Expr) visit(arg));
-            }
+            methodCall.args.addAll(processArgs(ctx.expressionList().expression(), jMethod));
         }
         return methodCall;
 
@@ -274,11 +272,29 @@ public class CodeGenerator extends JBaseVisitor<OutputModelObject> {
 
         methodCall.args.add(new TypeCast(new DataType(jMethod.getEnclosingScope().getName()), lhsExpr));
         if (ctx.expressionList() != null) {
-            for (JParser.ExpressionContext arg : ctx.expressionList().expression()) {
-                methodCall.args.add((Expr) visit(arg));
-            }
+            methodCall.args.addAll(processArgs(ctx.expressionList().expression(), jMethod));
         }
         return methodCall;
+    }
+
+    private List<Expr> processArgs(List<JParser.ExpressionContext> expressionList, JMethod jMethod) {
+        List<Expr> args = new ArrayList<>();
+        for (int i = 0; i < expressionList.size(); i++) {
+            JParser.ExpressionContext arg = expressionList.get(i);
+
+            JField jField = (JField) jMethod.getSymbols().get(i + 1);
+            DataType lhArgType = new DataType(jField.getType().getName());
+
+            Expr argExpr = (Expr) visit(arg);
+            DataType rhArgType = argExpr.type;
+
+            if (rhArgType == null || (!rhArgType.isPrimitive && !lhArgType.equals(rhArgType))) {
+                argExpr = new TypeCast(lhArgType, argExpr);
+            }
+
+            args.add(argExpr);
+        }
+        return args;
     }
 
     @Override
